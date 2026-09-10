@@ -191,42 +191,6 @@ curl http://localhost/api/v1/links/1/stats \
   "created_at": "2026-09-08T19:29:46.925068"
 }
 ```
-
-## 🗄️ Схема базы данных
-
-**users** — пользователи:
-
-| Поле | Тип | Описание |
-|---|---|---|
-| id | integer (PK) | идентификатор |
-| username | varchar(50), unique, index | логин |
-| password_hash | varchar(128) | PBKDF2-хэш с солью |
-| is_admin | boolean | роль |
-| created_at | timestamp | дата создания |
-
-**links** — короткие ссылки:
-
-| Поле | Тип | Описание |
-|---|---|---|
-| id | integer (PK) | идентификатор |
-| short_code | varchar(10), unique, index | короткий код |
-| original_url | text | исходная ссылка |
-| owner_id | integer (FK → users.id), nullable | владелец ссылки |
-| created_at | timestamp | дата создания |
-| expires_at | timestamp, nullable | срок действия |
-| click_count | integer | счётчик кликов |
-
-**clicks** — аналитика переходов:
-
-| Поле | Тип | Описание |
-|---|---|---|
-| id | integer (PK) | идентификатор |
-| link_id | integer (FK → links.id), index | ссылка |
-| clicked_at | timestamp | время клика |
-| ip_address | varchar(45) | IP пользователя |
-| user_agent | text | браузер/устройство |
-| referer | text | источник перехода |
-
 ## 🧪 Тесты
 
 ```bash
@@ -236,8 +200,6 @@ pip install -r requirements.txt
 # Запусти тесты
 pytest tests/ -v
 ```
-
-Покрытие: 20 тестов — базовые сценарии, аутентификация, права доступа (401/403/409), владение ссылками, админ-функции.
 
 ## 📁 Структура проекта
 
@@ -276,16 +238,6 @@ url-shortener/
 На каждый push в `main` GitHub Actions прогоняет:
 1. Линтеры (ruff, mypy)
 2. Тесты (pytest)
-
-## 📈 Планы развития
-
-- [x] Аутентификация пользователей (JWT) и ролевая модель
-- [ ] Alembic-миграции вместо `create_all`
-- [ ] Rate limiting через Redis
-- [ ] Кастомные короткие коды
-- [ ] QR-коды для ссылок
-- [ ] Графики аналитики по дням
-- [ ] Нагрузочное тестирование (Locust)
 
 ## 👤 Автор
 
