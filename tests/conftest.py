@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.database import Base, get_db
 from app.main import app
+from app.services import user_service
 
 # In-memory SQLite для тестов
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -31,10 +32,15 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Сидим админа, чтобы админ-сценарии работали в тестах
+    async with TestSessionLocal() as session:
+        await user_service.ensure_admin(session)
+
     # Подменяем функции кэша на заглушки (чтобы не нужен реальный Redis)
-    with patch("app.routers.links.set_cached_url", new_callable=AsyncMock), \
-         patch("app.routers.redirect.get_cached_url", new_callable=AsyncMock, return_value=None), \
-         patch("app.routers.redirect.set_cached_url", new_callable=AsyncMock):
+    with patch("app.routers.redirect.get_cached_url", new_callable=AsyncMock, return_value=None), \
+         patch("app.routers.redirect.set_cached_url", new_callable=AsyncMock), \
+         patch("app.routers.links.delete_cached_url", new_callable=AsyncMock), \
+         patch("app.routers.links.clear_cache", new_callable=AsyncMock):
 
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:

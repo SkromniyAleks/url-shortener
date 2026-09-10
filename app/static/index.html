@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Shortener</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>🔗 URL Shortener</h1>
+        <p class="subtitle">Сокращай ссылки и следи за кликами</p>
+      </div>
+      <div id="auth-panel" class="auth-panel"></div>
+    </div>
+  </header>
+
+  <main>
+    <section id="login-wall" class="card login-wall hidden">
+      <h2>🔒 Требуется вход</h2>
+      <p class="wall-text">Создание ссылок, аналитика кликов и управление доступны только авторизованным пользователям.</p>
+      <div class="wall-actions">
+        <button id="wall-login-btn" class="btn btn-primary" type="button">Войти</button>
+        <button id="wall-register-btn" class="btn btn-secondary" type="button">Зарегистрироваться</button>
+      </div>
+    </section>
+
+    <div id="app-section">
+      <section class="card">
+        <form id="create-form">
+          <input type="url" id="url-input" placeholder="https://example.com/very-long-url" required>
+          <button type="submit" class="btn btn-primary">Сократить</button>
+        </form>
+        <div id="result" class="result hidden">
+          <a id="short-link" href="#" target="_blank"></a>
+          <button id="copy-btn" class="btn btn-secondary" type="button">📋 Копировать</button>
+        </div>
+        <p id="error" class="error hidden"></p>
+      </section>
+
+      <section class="card">
+        <div class="table-header">
+          <h2>Мои ссылки</h2>
+          <div class="table-actions">
+            <button id="users-btn" class="btn btn-secondary hidden" type="button">👥 Пользователи</button>
+            <button id="clear-btn" class="btn btn-danger hidden" type="button">🧹 Очистить БД</button>
+            <button id="refresh-btn" class="btn btn-secondary" type="button">⟳ Обновить</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Код</th><th>Оригинал</th><th>Клики</th><th>Создана</th><th id="author-header" class="hidden">Автор</th><th></th></tr>
+          </thead>
+          <tbody id="links-body"></tbody>
+        </table>
+        <p id="empty" class="empty hidden">Ссылок пока нет — создай первую выше 👆</p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Модалка аналитики кликов -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content card">
+      <div class="table-header">
+        <h2 id="modal-title">Аналитика кликов</h2>
+        <button id="modal-close" class="btn btn-secondary" type="button">✕</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Время</th><th>IP</th><th>User-Agent</th><th>Реферер</th></tr>
+        </thead>
+        <tbody id="clicks-body"></tbody>
+      </table>
+      <p id="clicks-empty" class="empty hidden">Кликов пока нет</p>
+    </div>
+  </div>
+
+  <!-- Модалка входа/регистрации -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-content card modal-small">
+      <div class="table-header">
+        <h2 id="auth-title">Вход</h2>
+        <button id="auth-close" class="btn btn-secondary" type="button">✕</button>
+      </div>
+      <form id="auth-form">
+        <label for="auth-username">Логин</label>
+        <input type="text" id="auth-username" minlength="3" maxlength="50" required>
+        <label for="auth-password">Пароль</label>
+        <input type="password" id="auth-password" minlength="6" maxlength="72" required>
+        <p id="auth-error" class="error hidden"></p>
+        <button type="submit" class="btn btn-primary btn-wide" id="auth-submit">Войти</button>
+      </form>
+      <p class="auth-switch">
+        <button id="auth-toggle" class="link-button" type="button">Нет аккаунта? Зарегистрируйся</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Модалка управления пользователями (админ) -->
+  <div id="users-modal" class="modal hidden">
+    <div class="modal-content card">
+      <div class="table-header">
+        <h2>Управление пользователями</h2>
+        <button id="users-close" class="btn btn-secondary" type="button">✕</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Логин</th><th>Роль</th><th>Создан</th><th></th></tr>
+        </thead>
+        <tbody id="users-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

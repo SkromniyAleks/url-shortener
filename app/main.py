@@ -1,36 +1,45 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
-from app.database import Base, engine
-from app.redis_client import close_redis
-from app.routers import links, redirect
+from app.database import Base, engine, get_db
+from app.routers import admin, auth, links, redirect
+from app.services import user_service
+
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Создаём таблицы при старте, очищаем ресурсы при завершении."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    async for db in get_db():
+        await user_service.ensure_admin(db)
     yield
-    await close_redis()
-    await engine.dispose()
 
 
-app = FastAPI(
-    title="URL Shortener API",
-    description="Высоконагруженный сервис сокращения ссылок с аналитикой",
-    version="1.0.0",
-    lifespan=lifespan,
-)
+app = FastAPI(title="URL Shortener", version="1.2.0", lifespan=lifespan)
 
 
-@app.get("/health", tags=["system"])
+# Фикс-пути строго ДО шаблонного /{short_code},
+# иначе редирект-роутер перехватит /health
+@app.get("/health", tags=["service"])
 async def health():
-    """Проверка работоспособности."""
     return {"status": "ok"}
 
 
-# ВАЖНО: API-роуты регистрируем ДО catch-all редиректа
-app.include_router(links.router)
+@app.get("/", include_in_schema=False)
+async def index():
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(links.router, prefix="/api/v1/links")
 app.include_router(redirect.router)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
