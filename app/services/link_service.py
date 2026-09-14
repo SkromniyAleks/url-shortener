@@ -4,6 +4,7 @@ import string
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+
 from app.config import settings
 from app.models import Click, Link, User
 from app.schemas import LinkCreate
@@ -96,7 +97,10 @@ async def delete_link(db: AsyncSession, link: Link) -> None:
 
 async def delete_all_links(db: AsyncSession) -> int:
     """Полная очистка: все клики, затем все ссылки. Возвращает число удалённых ссылок."""
+    total = (
+        await db.execute(select(func.count()).select_from(Link))
+    ).scalar_one()
     await db.execute(delete(Click))
-    result = await db.execute(delete(Link))
+    await db.execute(delete(Link))
     await db.commit()
-    return result.rowcount or 0
+    return total

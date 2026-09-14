@@ -105,12 +105,12 @@ async def delete_link(
     return Response(status_code=204)
 
 
-@router.delete("", status_code=204)
+@router.delete("")
 async def delete_all_links(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_admin),
 ):
-    """Полная очистка БД: только админ."""
-    await link_service.delete_all_links(db)
+    """Полная очистка БД: только админ. Возвращает число удалённых ссылок."""
+    deleted = await link_service.delete_all_links(db)
     await clear_cache()
-    return Response(status_code=204)
+    return {"deleted": deleted}

@@ -9,7 +9,6 @@ from app.database import Base, engine, get_db
 from app.routers import admin, auth, links, redirect
 from app.services import user_service
 
-
 STATIC_DIR = Path(__file__).parent / "static"
 
 

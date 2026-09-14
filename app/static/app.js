@@ -202,8 +202,9 @@ async function deleteLink(linkId) {
 async function clearAll() {
   if (!confirm("Очистить БД: удалить ВСЕ ссылки и клики? Действие необратимо.")) return;
   const res = await fetch(`${API}/links`, { method: "DELETE", headers: authHeaders() });
-  if (res.status === 204) {
-    showToast("База данных очищена");
+  if (res.ok) {
+    const data = await res.json().catch(() => ({}));
+    showToast(`База данных очищена (удалено ссылок: ${data.deleted ?? "—"})`);
     await loadLinks();
   } else {
     showToast("Недостаточно прав", "error");

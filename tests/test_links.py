@@ -140,7 +140,8 @@ async def test_admin_clear_all_links(client):
     response = await client.delete(
         "/api/v1/links", headers=_auth(admin.json()["access_token"])
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert response.json()["deleted"] == 1
     assert (await client.get("/api/v1/links", headers=_auth(token))).json() == []
 
 

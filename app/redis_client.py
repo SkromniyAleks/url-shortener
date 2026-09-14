@@ -15,7 +15,10 @@ _memory_cache: dict[str, str] = {}
 async def get_cached_url(short_code: str) -> str | None:
     if _redis_client is None:
         return _memory_cache.get(short_code)
-    return await _redis_client.get(f"link:{short_code}")
+    value = await _redis_client.get(f"link:{short_code}")
+    if value is None:
+        return None
+    return value.decode() if isinstance(value, bytes) else value
 
 
 async def set_cached_url(short_code: str, url: str) -> None:
